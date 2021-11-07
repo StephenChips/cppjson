@@ -1,0 +1,57 @@
+Start testing: Nov 07 16:57 CST
+----------------------------------------------------------
+1/2 Testing: HelloTest.BasicAssertions
+1/2 Test: HelloTest.BasicAssertions
+Command: "/mnt/c/Users/23324/Documents/Codes/cppjson/test/build/hello_test" "--gtest_filter=HelloTest.BasicAssertions" "--gtest_also_run_disabled_tests"
+Directory: /mnt/c/Users/23324/Documents/Codes/cppjson/test/build
+"HelloTest.BasicAssertions" start time: Nov 07 16:57 CST
+Output:
+----------------------------------------------------------
+Running main() from /mnt/c/Users/23324/Documents/Codes/cppjson/test/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = HelloTest.BasicAssertions
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from HelloTest
+[ RUN      ] HelloTest.BasicAssertions
+[       OK ] HelloTest.BasicAssertions (0 ms)
+[----------] 1 test from HelloTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"HelloTest.BasicAssertions" end time: Nov 07 16:57 CST
+"HelloTest.BasicAssertions" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: HelloTest2.BasicAssertions
+2/2 Test: HelloTest2.BasicAssertions
+Command: "/mnt/c/Users/23324/Documents/Codes/cppjson/test/build/hello_test" "--gtest_filter=HelloTest2.BasicAssertions" "--gtest_also_run_disabled_tests"
+Directory: /mnt/c/Users/23324/Documents/Codes/cppjson/test/build
+"HelloTest2.BasicAssertions" start time: Nov 07 16:57 CST
+Output:
+----------------------------------------------------------
+Running main() from /mnt/c/Users/23324/Documents/Codes/cppjson/test/build/_deps/googletest-src/googletest/src/gtest_main.cc
+Note: Google Test filter = HelloTest2.BasicAssertions
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from HelloTest2
+[ RUN      ] HelloTest2.BasicAssertions
+[       OK ] HelloTest2.BasicAssertions (0 ms)
+[----------] 1 test from HelloTest2 (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"HelloTest2.BasicAssertions" end time: Nov 07 16:57 CST
+"HelloTest2.BasicAssertions" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 07 16:57 CST

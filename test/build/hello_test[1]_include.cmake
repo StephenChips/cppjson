@@ -1,0 +1,5 @@
+if(EXISTS "/mnt/c/Users/23324/Documents/Codes/cppjson/test/build/hello_test[1]_tests.cmake")
+  include("/mnt/c/Users/23324/Documents/Codes/cppjson/test/build/hello_test[1]_tests.cmake")
+else()
+  add_test(hello_test_NOT_BUILT hello_test_NOT_BUILT)
+endif()
