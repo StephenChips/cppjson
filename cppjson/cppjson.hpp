@@ -9,9 +9,6 @@ struct JSONObjectEntry
     JSON value;
 
     JSONObjectEntry(std::string _k, JSON _v) : key(_k), value(_v){};
-    JSONObjectEntry(std::string _k, std::initializer_list<JSONObjectEntry> _v);
-    JSONObjectEntry(double _k, JSON _v);
-    JSONObjectEntry(double _k, std::initializer_list<JSONObjectEntry> _v);
 };
 
 class JSON
@@ -48,7 +45,7 @@ public:
     JSON &operator[](const std::string &s);
     JSON &operator[](size_t idx);
 
-    JSON &JSON::operator=(const JSON &val);
+    JSON &operator=(const JSON &val);
 
     template <typename T>
     T get();

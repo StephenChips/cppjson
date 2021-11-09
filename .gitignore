@@ -33,3 +33,7 @@
 
 # Editor specific files
 .vscode/
+
+# CMake generated files
+CMakeFiles/
+/_deps
