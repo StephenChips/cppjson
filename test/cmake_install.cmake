@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/d/Projects/cppjson/test
+# Install script for directory: /mnt/c/Users/23324/Documents/Codes/cppjson/test
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/mnt/d/Projects/cppjson/test/_deps/googletest-build/cmake_install.cmake")
+  include("/mnt/c/Users/23324/Documents/Codes/cppjson/test/_deps/googletest-build/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/mnt/d/Projects/cppjson/test/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/mnt/c/Users/23324/Documents/Codes/cppjson/test/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

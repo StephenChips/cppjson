@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/d/Projects/cppjson/test
+CMAKE_SOURCE_DIR = /mnt/c/Users/23324/Documents/Codes/cppjson/test
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/d/Projects/cppjson/test
+CMAKE_BINARY_DIR = /mnt/c/Users/23324/Documents/Codes/cppjson/test
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -137,9 +137,9 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/Projects/cppjson/test/CMakeFiles /mnt/d/Projects/cppjson/test/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/23324/Documents/Codes/cppjson/test/CMakeFiles /mnt/c/Users/23324/Documents/Codes/cppjson/test/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/d/Projects/cppjson/test/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/23324/Documents/Codes/cppjson/test/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -168,17 +168,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named hello_test
+# Target rules for targets named cppjsontest
 
 # Build rule for target.
-hello_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 hello_test
-.PHONY : hello_test
+cppjsontest: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 cppjsontest
+.PHONY : cppjsontest
 
 # fast build rule for target.
-hello_test/fast:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/build
-.PHONY : hello_test/fast
+cppjsontest/fast:
+	$(MAKE) -f CMakeFiles/cppjsontest.dir/build.make CMakeFiles/cppjsontest.dir/build
+.PHONY : cppjsontest/fast
 
 #=============================================================================
 # Target rules for targets named gmock_main
@@ -232,59 +232,32 @@ gtest/fast:
 	$(MAKE) -f _deps/googletest-build/googletest/CMakeFiles/gtest.dir/build.make _deps/googletest-build/googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
 
-hello_test.o: hello_test.cc.o
+cppjsontest.o: cppjsontest.cc.o
 
-.PHONY : hello_test.o
-
-# target to build an object file
-hello_test.cc.o:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test.cc.o
-.PHONY : hello_test.cc.o
-
-hello_test.i: hello_test.cc.i
-
-.PHONY : hello_test.i
-
-# target to preprocess a source file
-hello_test.cc.i:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test.cc.i
-.PHONY : hello_test.cc.i
-
-hello_test.s: hello_test.cc.s
-
-.PHONY : hello_test.s
-
-# target to generate assembly for a file
-hello_test.cc.s:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test.cc.s
-.PHONY : hello_test.cc.s
-
-hello_test2.o: hello_test2.cc.o
-
-.PHONY : hello_test2.o
+.PHONY : cppjsontest.o
 
 # target to build an object file
-hello_test2.cc.o:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test2.cc.o
-.PHONY : hello_test2.cc.o
+cppjsontest.cc.o:
+	$(MAKE) -f CMakeFiles/cppjsontest.dir/build.make CMakeFiles/cppjsontest.dir/cppjsontest.cc.o
+.PHONY : cppjsontest.cc.o
 
-hello_test2.i: hello_test2.cc.i
+cppjsontest.i: cppjsontest.cc.i
 
-.PHONY : hello_test2.i
+.PHONY : cppjsontest.i
 
 # target to preprocess a source file
-hello_test2.cc.i:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test2.cc.i
-.PHONY : hello_test2.cc.i
+cppjsontest.cc.i:
+	$(MAKE) -f CMakeFiles/cppjsontest.dir/build.make CMakeFiles/cppjsontest.dir/cppjsontest.cc.i
+.PHONY : cppjsontest.cc.i
 
-hello_test2.s: hello_test2.cc.s
+cppjsontest.s: cppjsontest.cc.s
 
-.PHONY : hello_test2.s
+.PHONY : cppjsontest.s
 
 # target to generate assembly for a file
-hello_test2.cc.s:
-	$(MAKE) -f CMakeFiles/hello_test.dir/build.make CMakeFiles/hello_test.dir/hello_test2.cc.s
-.PHONY : hello_test2.cc.s
+cppjsontest.cc.s:
+	$(MAKE) -f CMakeFiles/cppjsontest.dir/build.make CMakeFiles/cppjsontest.dir/cppjsontest.cc.s
+.PHONY : cppjsontest.cc.s
 
 # Help Target
 help:
@@ -299,17 +272,14 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test"
-	@echo "... hello_test"
+	@echo "... cppjsontest"
 	@echo "... gmock_main"
 	@echo "... gmock"
 	@echo "... gtest_main"
 	@echo "... gtest"
-	@echo "... hello_test.o"
-	@echo "... hello_test.i"
-	@echo "... hello_test.s"
-	@echo "... hello_test2.o"
-	@echo "... hello_test2.i"
-	@echo "... hello_test2.s"
+	@echo "... cppjsontest.o"
+	@echo "... cppjsontest.i"
+	@echo "... cppjsontest.s"
 .PHONY : help
 
 

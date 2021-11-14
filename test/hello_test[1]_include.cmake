@@ -1,5 +1,0 @@
-if(EXISTS "/mnt/d/Projects/cppjson/test/hello_test[1]_tests.cmake")
-  include("/mnt/d/Projects/cppjson/test/hello_test[1]_tests.cmake")
-else()
-  add_test(hello_test_NOT_BUILT hello_test_NOT_BUILT)
-endif()

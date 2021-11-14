@@ -2,19 +2,13 @@
 #define CPP_JSON
 
 #include <string>
-
-struct JSONObjectEntry
-{
-    std::string key;
-    JSON value;
-
-    JSONObjectEntry(std::string _k, JSON _v) : key(_k), value(_v){};
-};
+#include <vector>
+#include <map>
 
 class JSON
 {
 private:
-    enum Type
+    enum JSONType
     {
         BOOL,
         NUMBER,
@@ -22,13 +16,17 @@ private:
         JSONNULL,
         OBJECT,
         ARRAY,
-    };
+    } valType;
 
-    JSON(JSON::Type type);
+    nullptr_t valNullptr = nullptr;
+    std::string valStr;
+    double valDouble;
+    bool valBoolean;
+    std::vector<JSON> valArray;
+    std::map<std::string, JSON> valObject;
 
 public:
     JSON();
-    JSON(std::initializer_list<JSONObjectEntry> list);
     JSON(bool val);
     JSON(double val);
     JSON(std::string val);
@@ -58,7 +56,7 @@ public:
     void erase(size_t start, size_t end);
     void erase(const std::string &s);
 
-    static JSON array(std::initializer_list<JSON> entries);
+    static JSON array();
 };
 
 template <>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(my_project)
+project(cppjsontest)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
@@ -15,15 +15,15 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+include_directories(${cppjsontest_SOURCE_DIR}/../cppjson)
 add_executable(
-  hello_test
-  hello_test.cc
-  hello_test2.cc
+  cppjsontest
+  cppjsontest
 )
 target_link_libraries(
-  hello_test
+  cppjsontest
   gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(cppjsontest)
