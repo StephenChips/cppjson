@@ -13,14 +13,14 @@ JSON::JSON() : valType(OBJECT) {}
  * 
  * @param val 
  */
-JSON::JSON(bool val): valType(BOOL), valBoolean(val) {}
+JSON::JSON(bool val) : valType(BOOL), valBoolean(val) {}
 
 /**
  * @brief Construct a new JSON::JSON object holds a number.
  * 
  * @param val 
  */
-JSON::JSON(double val): valType(NUMBER), valDouble(val) {};
+JSON::JSON(double val) : valType(NUMBER), valDouble(val){};
 
 /**
  * @brief Construct a new JSON::JSON object holds a string.
@@ -34,7 +34,7 @@ JSON::JSON(std::string val){};
  * 
  * @param val 
  */
-JSON::JSON(nullptr_t val): valType(JSONNULL) {};
+JSON::JSON(nullptr_t val) : valType(JSONNULL){};
 
 /**
  * @brief Copy constructor
@@ -45,16 +45,15 @@ JSON::JSON(const JSON &val){};
 
 /* A series of methods return the type of a JSON::JSON object. */
 
-bool JSON::isBool(){};
-bool JSON::isNumber(){};
-bool JSON::isString(){};
-bool JSON::isNull(){};
-bool JSON::isObject(){};
-bool JSON::isArray(){};
+bool JSON::isBool() { return false; };
+bool JSON::isNumber() { return false; };
+bool JSON::isString() { return false; };
+bool JSON::isNull() { return false; };
+bool JSON::isObject() { return false; };
+bool JSON::isArray() { return false; };
 
 /* Entry-access methods, which are for JSON::JSON objects that represents JSON objects or arrays. */
 
-JSON &JSON::operator[](const std::string &s){};
 JSON &JSON::operator[](const std::string &s){};
 JSON &JSON::operator[](size_t idx){};
 
