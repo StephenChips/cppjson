@@ -1,15 +1,22 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(cppjson VERSION 0.1.0)
 
-set(SRC ${SRC})
-
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
-add_subdirectory(cppjson)
+set(SRC
+  ./cppjson/cppjson.cpp
+)
+
+add_library(
+  cppjson SHARED
+  ${SRC}
+)
+
+target_include_directories(cppjson PUBLIC ./cppjson)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -25,6 +32,7 @@ enable_testing()
 add_executable(
   hello_test
   test/hello_test.cpp
+  ${SRC}
 )
 target_link_libraries(
   hello_test
@@ -33,3 +41,4 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(hello_test)
+

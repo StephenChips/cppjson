@@ -1,4 +1,5 @@
 #include <string>
+#include <variant>
 
 #include "cppjson.hpp"
 
@@ -6,21 +7,21 @@
  * @brief The default constructor will construct an empty JSON object.
  * 
  */
-JSON::JSON() : valType(OBJECT) {}
+JSON::JSON() : type(OBJECT) {}
 
 /**
  * @brief  Construct a new JSON::JSON object holds a boolean.
  * 
  * @param val 
  */
-JSON::JSON(bool val) : valType(BOOL), valBoolean(val) {}
+JSON::JSON(bool val) : type(BOOL), valBoolean(val) {}
 
 /**
  * @brief Construct a new JSON::JSON object holds a number.
  * 
  * @param val 
  */
-JSON::JSON(double val) : valType(NUMBER), valDouble(val){};
+JSON::JSON(double val) : type(NUMBER), valDouble(val){};
 
 /**
  * @brief Construct a new JSON::JSON object holds a string.
@@ -34,7 +35,7 @@ JSON::JSON(std::string val){};
  * 
  * @param val 
  */
-JSON::JSON(nullptr_t val) : valType(JSONNULL){};
+JSON::JSON(nullptr_t val) : type(JSONNULL) {};
 
 /**
  * @brief Copy constructor
@@ -43,14 +44,16 @@ JSON::JSON(nullptr_t val) : valType(JSONNULL){};
  */
 JSON::JSON(const JSON &val){};
 
+JSON::JSON(const std::string &str, size_t start, size_t end): type(UNPARSED), valPosition(str, start, end) {};
+
 /* A series of methods return the type of a JSON::JSON object. */
 
-bool JSON::isBool() { return false; };
-bool JSON::isNumber() { return false; };
-bool JSON::isString() { return false; };
-bool JSON::isNull() { return false; };
-bool JSON::isObject() { return false; };
-bool JSON::isArray() { return false; };
+bool JSON::isBool() { return type == BOOL; };
+bool JSON::isNumber() { return type == NUMBER; };
+bool JSON::isString() { return type == STRING; };
+bool JSON::isNull() { return type == JSONNULL; };
+bool JSON::isObject() { return type == OBJECT; };
+bool JSON::isArray() { return type == ARRAY; };
 
 /* Entry-access methods, which are for JSON::JSON objects that represents JSON objects or arrays. */
 

@@ -8,7 +8,7 @@
 class JSON
 {
 private:
-    enum JSONType
+    enum
     {
         BOOL,
         NUMBER,
@@ -16,22 +16,34 @@ private:
         JSONNULL,
         OBJECT,
         ARRAY,
-    } valType;
+        UNPARSED
+    } type;
 
-    nullptr_t valNullptr = nullptr;
-    std::string valStr;
+    struct Pos
+    {
+        const std::string *str;
+        size_t start, end;
+
+        Pos() = default;
+
+        Pos(const std::string &str, size_t start, size_t end) : str(&str), start(start), end(end) {}
+    };
+
+    std::string valString;
     double valDouble;
     bool valBoolean;
     std::vector<JSON> valArray;
     std::map<std::string, JSON> valObject;
+    struct Pos valPosition;
 
 public:
     JSON();
+    JSON(nullptr_t val);
     JSON(bool val);
     JSON(double val);
     JSON(std::string val);
-    JSON(nullptr_t val);
     JSON(const JSON &val);
+    JSON(const std::string &str, size_t start, size_t end);
 
     bool isBool();
     bool isNumber();
