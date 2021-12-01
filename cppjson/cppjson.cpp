@@ -1,5 +1,7 @@
 #include <string>
-#include <variant>
+#include <cassert>
+#include <stdexcept>
+#include <memory>
 
 #include "cppjson.hpp"
 
@@ -35,7 +37,7 @@ JSON::JSON(std::string val){};
  * 
  * @param val 
  */
-JSON::JSON(nullptr_t val) : type(JSONNULL) {};
+JSON::JSON(nullptr_t val) : type(JSONNULL){};
 
 /**
  * @brief Copy constructor
@@ -44,7 +46,9 @@ JSON::JSON(nullptr_t val) : type(JSONNULL) {};
  */
 JSON::JSON(const JSON &val){};
 
-JSON::JSON(const std::string &str, size_t start, size_t end): type(UNPARSED), valPosition(str, start, end) {};
+JSON::JSON(const JSON *parentNode) : type(ABSENCE), ptrParentNode(ptrParentNode) {};
+
+JSON::JSON(const std::string &str, size_t start, size_t end) : type(UNPARSED), valPosition(str, start, end){};
 
 /* A series of methods return the type of a JSON::JSON object. */
 
@@ -54,11 +58,38 @@ bool JSON::isString() { return type == STRING; };
 bool JSON::isNull() { return type == JSONNULL; };
 bool JSON::isObject() { return type == OBJECT; };
 bool JSON::isArray() { return type == ARRAY; };
+bool JSON::isAbsence() { return type == ABSENCE; };
 
-/* Entry-access methods, which are for JSON::JSON objects that represents JSON objects or arrays. */
+/* Entry-access methods for JSON::JSON objects represents JSON objects or arrays. */
 
-JSON &JSON::operator[](const std::string &s){};
-JSON &JSON::operator[](size_t idx){};
+JSON &JSON::operator[](const std::string &s)
+{
+    if (isObject())
+    {
+        auto iter = valObject.find(s);
+        if (iter == valObject.end()) {
+            if (!absenceNode) {
+                absenceNode = std::unique_ptr<JSON>(new JSON(*this));
+            }
+            return *absenceNode;
+        }
+        else {
+            return iter->second;
+        }
+    }
+    else if (isArray())
+    {
+        throw std::logic_error("JSON array can only use operator[] with positive integer argument.");
+    }
+    else
+    {
+        throw std::logic_error("Only JSON objects and arrays can use operator[].");
+    }
+};
+JSON &JSON::operator[](size_t idx)
+{
+    assert(isObject() || isArray());
+};
 
 /**
  * @brief Assignment operator, updates a JSON::JSON object's value.

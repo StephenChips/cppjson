@@ -4,11 +4,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 class JSON
 {
 private:
-    enum
+    enum Type
     {
         BOOL,
         NUMBER,
@@ -16,7 +17,8 @@ private:
         JSONNULL,
         OBJECT,
         ARRAY,
-        UNPARSED
+        UNPARSED,
+        ABSENCE
     } type;
 
     struct Pos
@@ -36,6 +38,12 @@ private:
     std::map<std::string, JSON> valObject;
     struct Pos valPosition;
 
+    JSON *ptrParentNode;
+    
+    std::unique_ptr<JSON> absenceNode;
+
+    JSON(const JSON *ptrParentNode);
+
 public:
     JSON();
     JSON(nullptr_t val);
@@ -51,6 +59,7 @@ public:
     bool isNull();
     bool isObject();
     bool isArray();
+    bool isAbsence();
 
     JSON &operator[](const std::string &s);
     JSON &operator[](size_t idx);
