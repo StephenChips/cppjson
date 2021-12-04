@@ -23,7 +23,7 @@ JSON::JSON(bool val) : type(BOOL), valBoolean(val) {}
  * 
  * @param val 
  */
-JSON::JSON(double val) : type(NUMBER), valDouble(val){};
+JSON::JSON(double val) : type(NUMBER), valNumber(val){};
 
 /**
  * @brief Construct a new JSON::JSON object holds a string.
@@ -46,13 +46,13 @@ JSON::JSON(nullptr_t val) : type(JSONNULL){};
  */
 JSON::JSON(const JSON &val){};
 
-JSON::JSON(const JSON *parentNode) : type(ABSENCE), ptrParentNode(ptrParentNode) {};
+JSON::JSON(const JSON *parentNode) : type(ABSENCE), ptrParentNode(ptrParentNode){};
 
 JSON::JSON(const std::string &str, size_t start, size_t end) : type(UNPARSED), valPosition(str, start, end){};
 
 /* A series of methods return the type of a JSON::JSON object. */
 
-bool JSON::isBool() { return type == BOOL; };
+bool JSON::isBoolean() { return type == BOOL; };
 bool JSON::isNumber() { return type == NUMBER; };
 bool JSON::isString() { return type == STRING; };
 bool JSON::isNull() { return type == JSONNULL; };
@@ -67,19 +67,22 @@ JSON &JSON::operator[](const std::string &s)
     if (isObject())
     {
         auto iter = valObject.find(s);
-        if (iter == valObject.end()) {
-            if (!absenceNode) {
+        if (iter == valObject.end())
+        {
+            if (!absenceNode)
+            {
                 absenceNode = std::unique_ptr<JSON>(new JSON(*this));
             }
             return *absenceNode;
         }
-        else {
+        else
+        {
             return iter->second;
         }
     }
     else if (isArray())
     {
-        throw std::logic_error("JSON array can only use operator[] with positive integer argument.");
+        throw std::logic_error("JSON array can only use operator[] with a positive integer argument.");
     }
     else
     {
@@ -88,7 +91,22 @@ JSON &JSON::operator[](const std::string &s)
 };
 JSON &JSON::operator[](size_t idx)
 {
-    assert(isObject() || isArray());
+    if (isArray())
+    {
+        if (idx < 0 || idx >= valArray.size())
+        {
+            throw std::out_of_range("input index is out of JSON array's range");
+        }
+        return valArray[idx];
+    }
+    else if (isObject())
+    {
+        throw std::logic_error("JSON object can only use operator[] with a string argument.");
+    }
+    else
+    {
+        throw std::logic_error("Only JSON objects and arrays can use operator[]");
+    }
 };
 
 /**
@@ -97,7 +115,30 @@ JSON &JSON::operator[](size_t idx)
  * @param val 
  * @return JSON& 
  */
-JSON &JSON::operator=(const JSON &val){};
+JSON &JSON::operator=(const JSON &rhs)
+{
+    if (isObject()) valObject.empty();
+    if (isArray()) valArray.empty();
+
+    type = rhs.type;
+
+    if (isObject()) valObject = rhs.valObject;
+    else if (isArray()) valArray = rhs.valArray;
+    else if (isNumber()) valNumber = rhs.valNumber;
+    else if (isString()) valString = rhs.valString;
+    else if (isBoolean()) valBoolean = rhs.valBoolean;
+    else if (isAbsence())
+    {
+        if (parentNodeType->isObject())
+        {
+
+        }
+        else if (ptrParentNode->isArray())
+        {
+
+        }
+    }
+};
 
 // Methods that gets the wrapping value under a JSON::JSON object.
 // They should only work when the underlying value matches the returnning type.

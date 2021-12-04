@@ -32,7 +32,7 @@ private:
     };
 
     std::string valString;
-    double valDouble;
+    double valNumber;
     bool valBoolean;
     std::vector<JSON> valArray;
     std::map<std::string, JSON> valObject;
@@ -53,7 +53,7 @@ public:
     JSON(const JSON &val);
     JSON(const std::string &str, size_t start, size_t end);
 
-    bool isBool();
+    bool isBoolean();
     bool isNumber();
     bool isString();
     bool isNull();
