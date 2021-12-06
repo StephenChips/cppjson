@@ -46,7 +46,7 @@ JSON::JSON(nullptr_t val) : type(JSONNULL){};
  */
 JSON::JSON(const JSON &val){};
 
-JSON::JSON(const JSON *parentNode) : type(ABSENCE), ptrParentNode(ptrParentNode){};
+JSON::JSON(std::function<void()> setParentCallback){};
 
 JSON::JSON(const std::string &str, size_t start, size_t end) : type(UNPARSED), valPosition(str, start, end){};
 
@@ -58,7 +58,8 @@ bool JSON::isString() { return type == STRING; };
 bool JSON::isNull() { return type == JSONNULL; };
 bool JSON::isObject() { return type == OBJECT; };
 bool JSON::isArray() { return type == ARRAY; };
-bool JSON::isAbsence() { return type == ABSENCE; };
+
+JSON::Type JSON::getType() { return type; }
 
 /* Entry-access methods for JSON::JSON objects represents JSON objects or arrays. */
 
@@ -71,7 +72,12 @@ JSON &JSON::operator[](const std::string &s)
         {
             if (!absenceNode)
             {
-                absenceNode = std::unique_ptr<JSON>(new JSON(*this));
+                std::function<void()> setParentNode = [this, s]()
+                {
+                    this->valObject[s] = *this->absenceNode;
+                    this->absenceNode.reset();
+                };
+                absenceNode = std::unique_ptr<JSON>(new JSON(setParentNode));
             }
             return *absenceNode;
         }
@@ -117,50 +123,88 @@ JSON &JSON::operator[](size_t idx)
  */
 JSON &JSON::operator=(const JSON &rhs)
 {
-    if (isObject()) valObject.empty();
-    if (isArray()) valArray.empty();
+    if (isObject())
+        valObject.empty();
+    if (isArray())
+        valArray.empty();
+
+    switch (rhs.type)
+    {
+    case OBJECT:
+        valObject = rhs.valObject;
+        break;
+    case ARRAY:
+        valArray = rhs.valArray;
+        break;
+    case STRING:
+        valString = rhs.valString;
+        break;
+    case BOOL:
+        valBoolean = rhs.valBoolean;
+        break;
+    case NUMBER:
+        valNumber = rhs.valNumber;
+    }
+
+    if (setParentNodeFn)
+        setParentNodeFn();
 
     type = rhs.type;
-
-    if (isObject()) valObject = rhs.valObject;
-    else if (isArray()) valArray = rhs.valArray;
-    else if (isNumber()) valNumber = rhs.valNumber;
-    else if (isString()) valString = rhs.valString;
-    else if (isBoolean()) valBoolean = rhs.valBoolean;
-    else if (isAbsence())
-    {
-        if (parentNodeType->isObject())
-        {
-
-        }
-        else if (ptrParentNode->isArray())
-        {
-
-        }
-    }
 };
 
 // Methods that gets the wrapping value under a JSON::JSON object.
 // They should only work when the underlying value matches the returnning type.
 
 template <>
-double JSON::get<double>(){};
+double JSON::get<double>()
+{
+    if (type == NUMBER)
+        return valNumber;
+    else
+        throw std::logic_error("The type is not number");
+};
 
 template <>
-bool JSON::get<bool>(){};
+bool JSON::get<bool>()
+{
+    if (type == BOOL)
+        return valBoolean;
+    else
+        throw std::logic_error("The type is not boolean");
+};
 
 template <>
-std::string JSON::get<std::string>(){};
+std::string JSON::get<std::string>()
+{
+    if (type == STRING)
+        return valString;
+    else
+        throw std::logic_error("The type is not string");
+};
 
 template <>
-nullptr_t JSON::get<nullptr_t>(){};
+nullptr_t JSON::get<nullptr_t>()
+{
+    if (type == JSONNULL)
+        return nullptr;
+    else
+        throw std::logic_error("The type is not null");
+};
 
 /**
  * @brief Get the size of an JSON::JSON array or an object. returns -1 if the object isn't.
  * 
  * @return size_t 
  */
-size_t JSON::size(){};
+size_t JSON::size()
+{
+    if (type == OBJECT)
+        return valObject.size();
+    else if (type == ARRAY)
+        return valArray.size();
+    else
+        return -1;
+};
 
 /* Methods for adding and removing an array or object's entries. */
 void JSON::push_back(const JSON &val){};
@@ -170,4 +214,15 @@ void JSON::erase(size_t start, size_t end){};
 void JSON::erase(const std::string &s){};
 
 /* A static method create an empty JSON::JSON array */
-JSON JSON::array(){};
+JSON JSON::array()
+{
+    auto ret = JSON();
+    ret.type = ARRAY;
+    return ret;
+};
+JSON JSON::array(size_t sz)
+{
+    auto ret = array();
+    ret.valArray = std::vector<JSON>(sz, nullptr);
+    return ret;
+};

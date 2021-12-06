@@ -5,22 +5,11 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <functional>
 
 class JSON
 {
 private:
-    enum Type
-    {
-        BOOL,
-        NUMBER,
-        STRING,
-        JSONNULL,
-        OBJECT,
-        ARRAY,
-        UNPARSED,
-        ABSENCE
-    } type;
-
     struct Pos
     {
         const std::string *str;
@@ -38,13 +27,22 @@ private:
     std::map<std::string, JSON> valObject;
     struct Pos valPosition;
 
-    JSON *ptrParentNode;
-    
     std::unique_ptr<JSON> absenceNode;
+    std::function<void()> setParentNodeFn;
 
-    JSON(const JSON *ptrParentNode);
-
+    JSON::JSON(std::function<void()> setParentCallback) {}
 public:
+    enum Type
+    {
+        BOOL,
+        NUMBER,
+        STRING,
+        JSONNULL,
+        OBJECT,
+        ARRAY,
+        UNPARSED,
+    } type;
+
     JSON();
     JSON(nullptr_t val);
     JSON(bool val);
@@ -59,7 +57,8 @@ public:
     bool isNull();
     bool isObject();
     bool isArray();
-    bool isAbsence();
+
+    Type getType();
 
     JSON &operator[](const std::string &s);
     JSON &operator[](size_t idx);
@@ -78,6 +77,7 @@ public:
     void erase(const std::string &s);
 
     static JSON array();
+    static JSON array(size_t sz);
 };
 
 template <>
@@ -89,5 +89,6 @@ std::string JSON::get<std::string>();
 
 std::string toString(JSON &json);
 JSON parse(const std::string &str);
+
 
 #endif
