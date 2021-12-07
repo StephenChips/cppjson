@@ -46,8 +46,6 @@ JSON::JSON(nullptr_t val) : type(JSONNULL){};
  */
 JSON::JSON(const JSON &val){};
 
-JSON::JSON(std::function<void()> setParentCallback){};
-
 JSON::JSON(const std::string &str, size_t start, size_t end) : type(UNPARSED), valPosition(str, start, end){};
 
 /* A series of methods return the type of a JSON::JSON object. */
@@ -150,13 +148,14 @@ JSON &JSON::operator=(const JSON &rhs)
         setParentNodeFn();
 
     type = rhs.type;
+
+    return *this;
 };
 
 // Methods that gets the wrapping value under a JSON::JSON object.
 // They should only work when the underlying value matches the returnning type.
 
-template <>
-double JSON::get<double>()
+double JSON::getNumber()
 {
     if (type == NUMBER)
         return valNumber;
@@ -164,8 +163,7 @@ double JSON::get<double>()
         throw std::logic_error("The type is not number");
 };
 
-template <>
-bool JSON::get<bool>()
+bool JSON::getBool()
 {
     if (type == BOOL)
         return valBoolean;
@@ -173,8 +171,7 @@ bool JSON::get<bool>()
         throw std::logic_error("The type is not boolean");
 };
 
-template <>
-std::string JSON::get<std::string>()
+std::string JSON::getString()
 {
     if (type == STRING)
         return valString;
@@ -182,14 +179,26 @@ std::string JSON::get<std::string>()
         throw std::logic_error("The type is not string");
 };
 
-template <>
-nullptr_t JSON::get<nullptr_t>()
+std::vector<JSON> JSON::getArray()
 {
-    if (type == JSONNULL)
-        return nullptr;
+    if (type == ARRAY)
+        return valArray;
     else
-        throw std::logic_error("The type is not null");
-};
+        throw std::logic_error("The type is not array");
+}
+
+std::map<std::string, JSON> JSON::getObject()
+{
+    if (type == OBJECT)
+        return valObject;
+    else
+        throw std::logic_error("The type is not object");
+}
+
+bool JSON::isNull()
+{
+    return type == JSONNULL;
+}
 
 /**
  * @brief Get the size of an JSON::JSON array or an object. returns -1 if the object isn't.
@@ -205,13 +214,6 @@ size_t JSON::size()
     else
         return -1;
 };
-
-/* Methods for adding and removing an array or object's entries. */
-void JSON::push_back(const JSON &val){};
-void JSON::push_front(const JSON &val){};
-void JSON::erase(size_t idx){};
-void JSON::erase(size_t start, size_t end){};
-void JSON::erase(const std::string &s){};
 
 /* A static method create an empty JSON::JSON array */
 JSON JSON::array()

@@ -9,5 +9,9 @@ TEST(HelloTest, BasicAssertions)
   JSON jsonNull(nullptr);
   JSON jsonBoolean(false);
 
+  auto val = jsonObj.getObject();
+
+  EXPECT_TRUE(val.size() == 0);
+
   EXPECT_TRUE(jsonObj.isObject());
 }
