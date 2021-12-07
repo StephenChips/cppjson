@@ -30,7 +30,7 @@ private:
     std::unique_ptr<JSON> absenceNode;
     std::function<void()> setParentNodeFn;
 
-    JSON::JSON(std::function<void()> setParentCallback) {}
+    JSON(std::function<void()> setParentCallback): setParentNodeFn(setParentCallback) {};
 public:
     enum Type
     {
@@ -65,8 +65,13 @@ public:
 
     JSON &operator=(const JSON &val);
 
-    template <typename T>
-    T get();
+    bool getBool();
+    double getNumber();
+    std::string getString();
+    std::vector<JSON> getArray();
+    std::map<std::string, JSON> getObject();
+
+    bool isNull();
 
     size_t size();
 
@@ -79,13 +84,6 @@ public:
     static JSON array();
     static JSON array(size_t sz);
 };
-
-template <>
-double JSON::get<double>();
-template <>
-bool JSON::get<bool>();
-template <>
-std::string JSON::get<std::string>();
 
 std::string toString(JSON &json);
 JSON parse(const std::string &str);
