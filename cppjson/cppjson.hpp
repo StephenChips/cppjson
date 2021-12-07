@@ -65,13 +65,11 @@ public:
 
     JSON &operator=(const JSON &val);
 
-    bool getBool();
-    double getNumber();
-    std::string getString();
-    std::vector<JSON> getArray();
-    std::map<std::string, JSON> getObject();
-
-    bool isNull();
+    bool &getBool();
+    double &getNumber();
+    std::string &getString();
+    std::vector<JSON> &getArray();
+    std::map<std::string, JSON> &getObject();
 
     size_t size();
 

@@ -155,7 +155,7 @@ JSON &JSON::operator=(const JSON &rhs)
 // Methods that gets the wrapping value under a JSON::JSON object.
 // They should only work when the underlying value matches the returnning type.
 
-double JSON::getNumber()
+double &JSON::getNumber()
 {
     if (type == NUMBER)
         return valNumber;
@@ -163,7 +163,7 @@ double JSON::getNumber()
         throw std::logic_error("The type is not number");
 };
 
-bool JSON::getBool()
+bool &JSON::getBool()
 {
     if (type == BOOL)
         return valBoolean;
@@ -171,7 +171,7 @@ bool JSON::getBool()
         throw std::logic_error("The type is not boolean");
 };
 
-std::string JSON::getString()
+std::string &JSON::getString()
 {
     if (type == STRING)
         return valString;
@@ -179,7 +179,7 @@ std::string JSON::getString()
         throw std::logic_error("The type is not string");
 };
 
-std::vector<JSON> JSON::getArray()
+std::vector<JSON> &JSON::getArray()
 {
     if (type == ARRAY)
         return valArray;
@@ -187,17 +187,12 @@ std::vector<JSON> JSON::getArray()
         throw std::logic_error("The type is not array");
 }
 
-std::map<std::string, JSON> JSON::getObject()
+std::map<std::string, JSON> &JSON::getObject()
 {
     if (type == OBJECT)
         return valObject;
     else
         throw std::logic_error("The type is not object");
-}
-
-bool JSON::isNull()
-{
-    return type == JSONNULL;
 }
 
 /**
