@@ -9,55 +9,85 @@
  * @brief The default constructor will construct an empty JSON object.
  * 
  */
-JSON::JSON() : type(OBJECT) {}
+JSON::JSON() : _type(OBJECT) {}
 
 /**
  * @brief  Construct a new JSON::JSON object holds a boolean.
  * 
  * @param val 
  */
-JSON::JSON(bool val) : type(BOOL), valBoolean(val) {}
+JSON::JSON(bool val) : _type(BOOL), valBoolean(val) {}
 
 /**
  * @brief Construct a new JSON::JSON object holds a number.
  * 
  * @param val 
  */
-JSON::JSON(double val) : type(NUMBER), valNumber(val){};
+JSON::JSON(double val) : _type(NUMBER), valNumber(val){};
 
 /**
  * @brief Construct a new JSON::JSON object holds a string.
  * 
  * @param val 
  */
-JSON::JSON(std::string val){};
+JSON::JSON(std::string val) : _type(STRING), valString(val){};
 
 /**
  * @brief Construct a new JSON::JSON object holds a null value.
  * 
  * @param val 
  */
-JSON::JSON(nullptr_t val) : type(JSONNULL){};
+JSON::JSON(nullptr_t val) : _type(JSONNULL){};
 
 /**
  * @brief Copy constructor
  * 
  * @param val 
  */
-JSON::JSON(const JSON &val){};
+JSON::JSON(const JSON &rhs)
+{
+    if (!rhs.isObject() || isObject())
+        valObject.empty();
+    if (!rhs.isArray() || isArray())
+        valArray.empty();
 
-JSON::JSON(const std::string &str, size_t start, size_t end) : type(UNPARSED), valPosition(str, start, end){};
+    switch (rhs._type)
+    {
+    case OBJECT:
+        valObject = rhs.valObject;
+        break;
+    case ARRAY:
+        valArray = rhs.valArray;
+        break;
+    case STRING:
+        valString = rhs.valString;
+        break;
+    case BOOL:
+        valBoolean = rhs.valBoolean;
+        break;
+    case NUMBER:
+        valNumber = rhs.valNumber;
+        break;
+    }
 
-/* A series of methods return the type of a JSON::JSON object. */
+    _type = rhs._type;
+}
 
-bool JSON::isBoolean() { return type == BOOL; };
-bool JSON::isNumber() { return type == NUMBER; };
-bool JSON::isString() { return type == STRING; };
-bool JSON::isNull() { return type == JSONNULL; };
-bool JSON::isObject() { return type == OBJECT; };
-bool JSON::isArray() { return type == ARRAY; };
+JSON::JSON(JSON &&rhs) noexcept : JSON()
+{
+    swap(*this, rhs);
+}
 
-JSON::Type JSON::getType() { return type; }
+/* A series of methods return the _type of a JSON::JSON object. */
+
+bool JSON::isBoolean() const { return _type == BOOL; };
+bool JSON::isNumber() const { return _type == NUMBER; };
+bool JSON::isString() const { return _type == STRING; };
+bool JSON::isNull() const { return _type == JSONNULL; };
+bool JSON::isObject() const { return _type == OBJECT; };
+bool JSON::isArray() const { return _type == ARRAY; };
+
+JSON::Type JSON::type() const { return _type; }
 
 /* Entry-access methods for JSON::JSON objects represents JSON objects or arrays. */
 
@@ -119,80 +149,76 @@ JSON &JSON::operator[](size_t idx)
  * @param val 
  * @return JSON& 
  */
-JSON &JSON::operator=(const JSON &rhs)
+JSON &JSON::operator=(JSON rhs)
 {
-    if (isObject())
-        valObject.empty();
-    if (isArray())
-        valArray.empty();
-
-    switch (rhs.type)
-    {
-    case OBJECT:
-        valObject = rhs.valObject;
-        break;
-    case ARRAY:
-        valArray = rhs.valArray;
-        break;
-    case STRING:
-        valString = rhs.valString;
-        break;
-    case BOOL:
-        valBoolean = rhs.valBoolean;
-        break;
-    case NUMBER:
-        valNumber = rhs.valNumber;
-    }
-
     if (setParentNodeFn)
         setParentNodeFn();
 
-    type = rhs.type;
-
+    swap(*this, rhs);
     return *this;
 };
 
 // Methods that gets the wrapping value under a JSON::JSON object.
-// They should only work when the underlying value matches the returnning type.
+// They should only work when the underlying value matches the returnning _type.
 
 double &JSON::getNumber()
 {
-    if (type == NUMBER)
+    if (_type == NUMBER)
         return valNumber;
-    else
-        throw std::logic_error("The type is not number");
+    throw std::logic_error("The type is not number");
 };
+
+const double &JSON::getNumber() const
+{
+    return const_cast<const double &>(const_cast<JSON &>(*this).getNumber());
+}
 
 bool &JSON::getBool()
 {
-    if (type == BOOL)
+    if (_type == BOOL)
         return valBoolean;
-    else
-        throw std::logic_error("The type is not boolean");
+    throw std::logic_error("The type is not boolean");
 };
+
+const bool &JSON::getBool() const
+{
+    return const_cast<const bool &>(const_cast<JSON &>(*this).getBool());
+}
 
 std::string &JSON::getString()
 {
-    if (type == STRING)
+    if (_type == STRING)
         return valString;
-    else
-        throw std::logic_error("The type is not string");
+    throw std::logic_error("The type is not string");
 };
+
+const std::string &JSON::getString() const
+{
+    return const_cast<const std::string &>(const_cast<JSON &>(*this).getString());
+}
 
 std::vector<JSON> &JSON::getArray()
 {
-    if (type == ARRAY)
+    if (_type == ARRAY)
         return valArray;
-    else
-        throw std::logic_error("The type is not array");
+    throw std::logic_error("The type is not array");
+}
+
+const std::vector<JSON> &JSON::getArray() const
+{
+    return const_cast<const std::vector<JSON> &>(const_cast<JSON &>(*this).getArray());
 }
 
 std::map<std::string, JSON> &JSON::getObject()
 {
-    if (type == OBJECT)
+    if (_type == OBJECT)
         return valObject;
-    else
-        throw std::logic_error("The type is not object");
+    throw std::logic_error("The type is not object");
+}
+
+const std::map<std::string, JSON> &JSON::getObject() const
+{
+    return const_cast<const std::map<std::string, JSON> &>(const_cast<JSON &>(*this).getObject());
 }
 
 /**
@@ -200,11 +226,11 @@ std::map<std::string, JSON> &JSON::getObject()
  * 
  * @return size_t 
  */
-size_t JSON::size()
+size_t JSON::size() const
 {
-    if (type == OBJECT)
+    if (_type == OBJECT)
         return valObject.size();
-    else if (type == ARRAY)
+    else if (_type == ARRAY)
         return valArray.size();
     else
         return -1;
@@ -213,13 +239,28 @@ size_t JSON::size()
 /* A static method create an empty JSON::JSON array */
 JSON JSON::array()
 {
-    auto ret = JSON();
-    ret.type = ARRAY;
+    JSON ret;
+    ret._type = ARRAY;
     return ret;
 };
+
 JSON JSON::array(size_t sz)
 {
     auto ret = array();
     ret.valArray = std::vector<JSON>(sz, nullptr);
     return ret;
 };
+
+void swap(JSON &first, JSON &second)
+{
+    using std::swap;
+
+    swap(first._type, second._type);
+    swap(first.valString, second.valString);
+    swap(first.valNumber, second.valNumber);
+    swap(first.valBoolean, second.valBoolean);
+    swap(first.valArray, second.valArray);
+    swap(first.valObject, second.valObject);
+    swap(first.setParentNodeFn, second.setParentNodeFn);
+    swap(first.absenceNode, second.absenceNode);
+}
