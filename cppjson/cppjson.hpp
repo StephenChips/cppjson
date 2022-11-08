@@ -6,18 +6,25 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include <stdexcept>
+
+class SyntaxError : std::logic_error
+{
+public:
+    SyntaxError() : std::logic_error("JSON syntax error") {}
+};
 
 class JSON
 {
 public:
     enum Type
     {
-        BOOL,
-        NUMBER,
-        STRING,
-        JSONNULL,
-        OBJECT,
-        ARRAY,
+        Bool,
+        Number,
+        String,
+        Null,
+        Object,
+        Array,
     };
 
 private:
@@ -36,12 +43,17 @@ private:
 
 public:
     JSON();
+    JSON(std::string val);
+    JSON(std::map<std::string, JSON> val);
+    JSON(std::vector<JSON> val);
+    JSON(const char *str);
+    JSON(const JSON &val);
     JSON(nullptr_t val);
     JSON(bool val);
     JSON(double val);
-    JSON(std::string val);
-    JSON(const JSON &val);
-    JSON(JSON &&rhs);
+    JSON(long val);
+    JSON(JSON &&rhs)
+    noexcept;
 
     bool isBoolean() const;
     bool isNumber() const;
@@ -63,6 +75,8 @@ public:
     double &getNumber();
     const double &getNumber() const;
 
+    nullptr_t getNull() const;
+
     std::string &getString();
     const std::string &getString() const;
 
@@ -77,12 +91,10 @@ public:
     static JSON array();
     static JSON array(size_t sz);
 
-    friend std::string toString(JSON &json);
-    friend JSON parse(const std::string &str);
     friend void swap(JSON &first, JSON &second);
 };
 
-std::string toString(JSON &json);
+std::string toString(const JSON &json);
 JSON parse(const std::string &str);
 void swap(JSON &first, JSON &second);
 

@@ -7,6 +7,8 @@
 #include <cmath>
 #include <sstream>
 #include <cstring>
+#include <limits>
+#include <cerrno>
 
 #include "cppjson.hpp"
 
@@ -15,61 +17,63 @@ using std::logic_error;
 using std::pair;
 using std::string;
 
-string::size_type skipWhitespaces(const string &input, string::size_type index);
-
 pair<JSON, string::size_type> parseJSON(const string &input, string::size_type index);
-
+pair<JSON, string::size_type> parseJSONObject(const string &input, string::size_type index);
 pair<JSON, string::size_type> parseJSONArray(const string &input, string::size_type index);
-
+pair<std::string, string::size_type> parseStringLiteral(const string &input, string::size_type index);
 pair<JSON, string::size_type> parseJSONNumber(const string &input, string::size_type index);
-
-string::size_type parseKeyword(const string &input, string::size_type index, const string &keyword);
-
-pair<std::array<char, 4>, string::size_type> parseEspacedChar(const string &input, string::size_type index);
-
+string::size_type expectString(const string &input, string::size_type index, const string &keyword);
+string::size_type skipWhitespaces(const string &input, string::size_type index);
+inline bool isHexLiteral(const string &input, string::size_type index);
+inline bool isOctalLiteral(const string &input, string::size_type index);
 std::pair<char16_t, string::size_type> parseUTF16EscapedValue(const string &input, string::size_type index);
-
-class SyntaxError : logic_error
-{
-public:
-    SyntaxError() : logic_error("JSON syntax error")
-    {
-    }
-};
+inline bool isLeadSurrogate(char16_t v);
+inline bool isTrailSurrogate(char16_t v);
+char32_t calculateCodepoint(char16_t leadSurroatge, char16_t trailSurrogate);
+void writeAsUTF8CodeUnits(std::ostringstream &oss, char32_t codepoint);
+void writeHexValueToBuffer(char buf[], const string &input, string::size_type index);
 
 JSON parse(const string &str)
 {
-    return parseJSON(str, 0).first;
+    auto result = parseJSON(str, 0);
+    auto end = skipWhitespaces(str, result.second);
+    if (end != str.size())
+        throw SyntaxError();
+    return result.first;
 }
 
 pair<JSON, string::size_type> parseJSON(const string &input, string::size_type index)
 {
+    index = skipWhitespaces(input, index);
     auto ch = input[index];
     if (ch == '{')
         return parseJSONObject(input, index);
-    if (ch == '[')
+    else if (ch == '[')
         return parseJSONArray(input, index);
-    if (ch == '"')
-        return parseJSONString(input, index);
-    if (isdigit(ch) || ch == '-')
-        return parseJSONNumber(input, index);
-    if (ch == 't')
+    else if (ch == '"')
     {
-        index = parseKeyword(input, index, "true");
+        auto result = parseStringLiteral(input, index);
+        return std::make_pair(JSON(result.first), result.second);
+    }
+    else if (isdigit(ch) || ch == '-')
+        return parseJSONNumber(input, index);
+    else if (ch == 't')
+    {
+        index = expectString(input, index, "true");
         return std::make_pair(JSON(true), index);
     }
-    if (ch == 'f')
+    else if (ch == 'f')
     {
-        index = parseKeyword(input, index, "false");
+        index = expectString(input, index, "false");
         return std::make_pair(JSON(false), index);
     }
-    if (ch == 'n')
+    else if (ch == 'n')
     {
-        index = parseKeyword(input, index, "null");
+        index = expectString(input, index, "null");
         return std::make_pair(JSON(nullptr), index);
     }
-
-    throw SyntaxError();
+    else
+        throw SyntaxError();
 }
 
 // The program looked ahead the next character first, and confirmed the what
@@ -79,18 +83,79 @@ pair<JSON, string::size_type> parseJSON(const string &input, string::size_type i
 
 pair<JSON, string::size_type> parseJSONObject(const string &input, string::size_type index)
 {
-    index++;
+    std::map<std::string, JSON> result;
+    index = skipWhitespaces(input, index + 1);
+
+    if (index == input.size())
+        throw SyntaxError();
+    if (input[index] == '}')
+        return std::make_pair(JSON(result), index + 1);
+
+    while (true)
+    {
+        index = skipWhitespaces(input, index);
+        auto objectKey = parseStringLiteral(input, index);
+        index = skipWhitespaces(input, objectKey.second);
+        index = expectString(input, index, ":");
+        index = skipWhitespaces(input, index);
+        auto objectValue = parseJSON(input, index);
+        index = skipWhitespaces(input, objectValue.second);
+
+        if (input[index] == '}')
+        {
+            result[objectKey.first] = objectValue.first;
+            return std::make_pair(JSON(result), index + 1);
+        }
+        else if (input[index] == ',')
+        {
+            result[objectKey.first] = objectValue.first;
+            index++;
+        }
+        else
+            throw SyntaxError();
+    }
+
+    throw SyntaxError();
 }
 
 pair<JSON, string::size_type> parseJSONArray(const string &input, string::size_type index)
 {
-    index++;
+    std::vector<JSON> result;
+    index = skipWhitespaces(input, index + 1);
+
+    if (index == input.size())
+        throw SyntaxError();
+    if (input[index] == ']')
+        return std::make_pair(JSON(result), index + 1);
+
+    while (true)
+    {
+        auto jsonVal = parseJSON(input, index);
+        index = skipWhitespaces(input, jsonVal.second);
+
+        if (index == input.size())
+            throw SyntaxError();
+        else if (input[index] == ']')
+        {
+            result.push_back(jsonVal.first);
+            return std::make_pair(JSON(result), index + 1);
+        }
+        else if (input[index] == ',')
+        {
+            result.push_back(jsonVal.first);
+            index = skipWhitespaces(input, index + 1);
+        }
+        else
+            throw SyntaxError();
+    }
 }
 
-pair<JSON, string::size_type> parseJSONString(const string &input, string::size_type index)
+pair<std::string, string::size_type> parseStringLiteral(const string &input, string::size_type index)
 {
-    string::size_type start = index;
+    // Skip the double-quote at the begining
+    index++;
 
+    string::size_type start = index;
     std::ostringstream oss;
 
     while (index != input.size())
@@ -100,7 +165,7 @@ pair<JSON, string::size_type> parseJSONString(const string &input, string::size_
             if (index + 1 >= input.size())
                 throw SyntaxError();
 
-            oss << string(start, index);
+            oss << input.substr(start, index - start);
 
             auto ch = input[index + 1];
             if (ch == 'u')
@@ -113,14 +178,14 @@ pair<JSON, string::size_type> parseJSONString(const string &input, string::size_
                     //
                     // Since the value we have just parsed is a lead surrogate, we need to get its correspondent trail surrogate.
 
-                    if (v1.second + 1 < input.size() && input[v1.second] == '\\' && input[v1.second + 1])
+                    if (v1.second + 1 < input.size() && input[v1.second] == '\\' && input[v1.second + 1] == 'u')
                     {
-                        auto v2 = parseUTF16EscapedValue(input, index);
+                        auto v2 = parseUTF16EscapedValue(input, v1.second);
                         if (isTrailSurrogate(v2.first))
                         {
-                            auto lowSurrogate = v1.first;
-                            auto highSurrogate = v2.first;
-                            auto codePoint = calculateCodepoint(highSurrogate, lowSurrogate);
+                            auto leadSurrogate = v1.first;
+                            auto trailSurrogate = v2.first;
+                            auto codePoint = calculateCodepoint(leadSurrogate, trailSurrogate);
                             writeAsUTF8CodeUnits(oss, codePoint);
                         }
                         else
@@ -169,12 +234,16 @@ pair<JSON, string::size_type> parseJSONString(const string &input, string::size_
 
                 index += 2;
             }
+
+            start = index;
         }
         else if (input[index] == '"')
         {
-            oss << string(start, index);
-            index++;
-            return std::make_pair(oss.str(), index);
+            if (start < index)
+            {
+                oss << input.substr(start, index - start);
+            }
+            return std::make_pair(oss.str(), index + 1);
         }
         else
         {
@@ -190,48 +259,64 @@ pair<JSON, string::size_type> parseJSONNumber(const string &input, string::size_
     // correspondent regex:
     // /^-?(0|([1-9][0-9]*))(\.[0-9]+)?((e|E)(-|\+)?[0-9]+)?$/
 
-    // For now we will just use string's stod function to parse the number.
+    // We could parse a number with our own codes, but for now we will just use `std::strtod`
+    // instead.
 
-    // JSON doesn't supports hex literals, but `strtod` can parse them.
-    if (isHexLiteral(input, index))
+    // JSON doesn't supports hex literals and octal literals, but `strtod` can parse them,
+    // so we should exclude them before parsing.
+    // Hex literal is something like 0x3, 0XE2, a literal started with 0x or 0X, and Octal
+    // literals is somthing like 045, 022, a literal started with a leading zero.
+    //
+    // In JSON, if a number's interal part's first digit is zero, it must be followed by the
+    // decimal point (.), no other digits can be appeared behind it.
+    if (isHexLiteral(input, index) || isOctalLiteral(input, index))
         throw SyntaxError();
 
     const char *cStr = input.c_str();
     char *endPtr = const_cast<char *>(cStr);
 
-    double result = std::strtod(cStr, &endPtr);
+    double result = std::strtod(cStr + index, &endPtr);
 
-    if (cStr == endPtr)
+    if (endPtr == cStr)
         throw SyntaxError();
     else if (result == HUGE_VAL)
-        throw std::range_error("The number is too large to parse as double.");
+        result = std::numeric_limits<double>::infinity();
+    else if (errno == ERANGE)
+        // Underflow, like 1.0E-1000
+        result = result > 0 ? 0 : -0;
 
-    return std::make_pair(JSON(result), index + (endPtr - cStr));
+    return std::make_pair(JSON(result), endPtr - cStr);
 }
 
-string::size_type parseKeyword(const string &input, string::size_type index, const string &keyword)
+string::size_type expectString(const string &input, string::size_type index, const string &str)
 {
-    auto kwIndex = 0;
+    auto i = index;
+    auto j = 0u;
 
-    while (index != input.size() && kwIndex != keyword.size())
+    while (i != input.size() && j != str.size())
     {
-        if (input[index] != keyword[kwIndex])
+        if (input[i] != str[j])
             break;
 
-        index++;
-        kwIndex++;
+        i++, j++;
     }
 
-    if (kwIndex != keyword.size())
+    if (j != str.size())
         throw SyntaxError();
 
-    return index;
+    return i;
 }
 
 string::size_type skipWhitespaces(const string &input, string::size_type index)
 {
-    while (index != input.size() && isspace(input[index]))
-        index++;
+    while (index != input.size())
+    {
+        auto ch = input[index];
+        if (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t')
+            index++;
+        else
+            break;
+    }
     return index;
 }
 
@@ -240,10 +325,16 @@ inline bool isHexLiteral(const string &input, string::size_type index)
     return index + 1 < input.size() && (input[index + 1] == 'x' || input[index + 1] == 'X');
 }
 
+inline bool isOctalLiteral(const string &input, string::size_type index)
+{
+    return index + 1 < input.size() && input[index] == '0' && isdigit(input[index + 1]);
+}
+
 std::pair<char16_t, string::size_type> parseUTF16EscapedValue(const string &input, string::size_type index)
 {
-    ensureExactlyHas4Digits(input, index + 2);
-    char16_t v = strtoul(input.c_str(), nullptr, 16);
+    char digitBuffer[5];
+    writeHexValueToBuffer(digitBuffer, input, index + 2);
+    char16_t v = strtoul(digitBuffer, nullptr, 16);
     return std::make_pair(v, index + 6);
 }
 
@@ -259,32 +350,38 @@ inline bool isTrailSurrogate(char16_t v)
 
 char32_t calculateCodepoint(char16_t leadSurroatge, char16_t trailSurrogate)
 {
-    return (static_cast<char32_t>(leadSurroatge - 0xD800u) << 10) + (trailSurrogate - 0xDC00u);
+    return (static_cast<char32_t>(leadSurroatge - 0xD800u) << 10) + (trailSurrogate - 0xDC00u) + 0x10000;
 }
 
 void writeAsUTF8CodeUnits(std::ostringstream &oss, char32_t codepoint)
 {
     if (codepoint <= 0x00007F)
     {
-        oss << codepoint;
+        oss << static_cast<char>(codepoint);
     }
     else if (codepoint <= 0x0007FF)
     {
-        oss << (0b11000000 | (codepoint >> 6));
-        oss << (0b10000000 | (codepoint & 0b111111));
+        oss << static_cast<char>(0b11000000 | (codepoint >> 6));
+        oss << static_cast<char>(0b10000000 | (codepoint & 0b111111));
     }
-    else if (codepoint <= 0x00D7FF || codepoint >= 0x00E000 && codepoint <= 0x00FFFF)
+    else if (codepoint <= 0x00FFFF)
     {
-        oss << (0b11100000 | (codepoint >> 12));
-        oss << (0b10000000 | ((codepoint >> 6) & 0b111111);
-        oss << (0b10000000 | (codepoint & 0b111111));
+        // Strictly speaking, codepoints 0x00D800..0x00DFFF should only be used in UTF-16 text as
+        // surrogate pair. This is how JSON escapes unicode that takes more than two bytes.
+        // But in case we met an unpaired surrogate, instead throwing a syntax error, we will still
+        // translate it to correspondent UTF-8 codeunits as if it was a normal unicode character
+        // for this is how JSON.parse(...) behaves in browser.
+
+        oss << static_cast<char>(0b11100000 | (codepoint >> 12));
+        oss << static_cast<char>(0b10000000 | ((codepoint >> 6) & 0b111111));
+        oss << static_cast<char>(0b10000000 | (codepoint & 0b111111));
     }
     else if (codepoint <= 0x10FFFF)
     {
-        oss << (0b11110000 | (codepoint >> 18));
-        oss << (0b10000000 | (codepoint >> 12) & 0b111111);
-        oss << (0b10000000 | (codepoint >> 6) & 0b111111);
-        oss << (0b10000000 | (codepoint & 0b111111));
+        oss << static_cast<char>(0b11110000 | (codepoint >> 18));
+        oss << static_cast<char>(0b10000000 | (codepoint >> 12) & 0b111111);
+        oss << static_cast<char>(0b10000000 | (codepoint >> 6) & 0b111111);
+        oss << static_cast<char>(0b10000000 | (codepoint & 0b111111));
     }
     else
     {
@@ -292,14 +389,21 @@ void writeAsUTF8CodeUnits(std::ostringstream &oss, char32_t codepoint)
     }
 }
 
-void ensureExactlyHas4Digits(const string &input, string::size_type index)
+void writeHexValueToBuffer(char xdigits[], const string &input, string::size_type index)
 {
-    if (index + 4 < input.size() && isdigit(input[index + 4]))
+    if (index + 4 >= input.size())
         throw SyntaxError();
 
-    for (auto i = index; i != index + 4; i++)
+    for (auto i = 0; i < 4; i++)
     {
-        if (!isdigit(input[i]))
+        if (!std::isxdigit(input[index + i]))
             throw SyntaxError();
     }
+
+    for (auto i = 0; i < 4; i++)
+    {
+        xdigits[i] = input[index + i];
+    }
+
+    xdigits[4] = '\0';
 }
