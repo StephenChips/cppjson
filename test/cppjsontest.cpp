@@ -128,7 +128,7 @@ TEST(CppJSONTests, TestParsingString)
   EXPECT_EQ(parse(u8"\"Sony \\u03b16400\"").getString(), std::string(u8"Sony α6400"));
   EXPECT_EQ(parse(u8"\"\\uDE00\\uD83D\\u0020\\u0020\\uD83D\"").getString(), std::string(u8"\xED\xB8\x80\xED\xA0\xBD\x20\x20\xED\xA0\xBD"));
   EXPECT_EQ(parse(u8"\"\\t\\r\\n\\f\\b\\\\\\/\"").getString(), std::string(u8"\t\r\n\f\b\\/"));
-  EXPECT_EQ(parse(u8"\"你好\"").getString(), std::string("你好"));
+  EXPECT_EQ(parse(u8"\"你好\"").getString(), std::string(u8"你好"));
 
   EXPECT_THROW(parse("\"ABC"), SyntaxError);
   EXPECT_THROW(parse("ABC\""), SyntaxError);
