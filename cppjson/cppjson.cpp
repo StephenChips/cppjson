@@ -163,7 +163,7 @@ JSON &JSON::operator=(JSON rhs)
 
     swap(*this, rhs);
     return *this;
-};
+}
 
 // Methods that gets the wrapping value under a JSON::JSON object.
 // They should work only when the underlying value matches the returning _type.
@@ -180,7 +180,7 @@ double &JSON::getNumber()
     if (_type == Number)
         return valNumber;
     throw std::logic_error("The type is not number");
-};
+}
 
 const double &JSON::getNumber() const
 {
@@ -204,7 +204,7 @@ std::string &JSON::getString()
     if (_type == String)
         return valString;
     throw std::logic_error("The type is not string");
-};
+}
 
 const std::string &JSON::getString() const
 {
@@ -248,21 +248,21 @@ size_t JSON::size() const
         return valArray.size();
     else
         return -1;
-};
+}
 
 /* A static method create an empty JSON::JSON array */
 JSON JSON::array()
 {
     JSON ret(std::vector<JSON>());
     return ret;
-};
+}
 
 JSON JSON::array(size_t sz)
 {
     auto ret = array();
     ret.valArray = std::vector<JSON>(sz, nullptr);
     return ret;
-};
+}
 
 void swap(JSON &first, JSON &second)
 {
